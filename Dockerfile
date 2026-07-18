@@ -5,7 +5,7 @@ ARG NODE_VERSION=22.14.0
 ARG GO_VERSION=1.23.6
 ARG JAVA_VERSION=21.0.6+7
 ARG YQ_VERSION=4.45.1
-ARG GLAB_VERSION=1.53.0
+ARG GLAB_VERSION=1.108.0
 ARG TARGETARCH=amd64
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -82,8 +82,7 @@ RUN set -eux; \
 
 # ---- glab (GitLab CLI) ----
 RUN set -eux; \
-    ARCH_GLAB=$([ "$TARGETARCH" = "amd64" ] && echo x86_64 || echo arm64); \
-    curl -fsSL "https://gitlab.com/gitlab-org/cli/-/releases/v${GLAB_VERSION}/downloads/glab_${GLAB_VERSION}_linux_${ARCH_GLAB}.tar.gz" \
+    curl -fsSL "https://gitlab.com/gitlab-org/cli/-/releases/v${GLAB_VERSION}/downloads/glab_${GLAB_VERSION}_linux_${TARGETARCH}.tar.gz" \
       | tar -C /tmp -xz; \
     install -m 755 /tmp/bin/glab /usr/local/bin/glab; \
     rm -rf /tmp/bin
