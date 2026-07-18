@@ -50,7 +50,7 @@ ENV PATH="/usr/local/go/bin:${PATH}"
 
 # ---- Java (Temurin) ----
 RUN set -eux; \
-    JV="${JAVA_VERSION/+/_}"; \
+    JV="$(echo "$JAVA_VERSION" | tr '+' '_')"; \
     curl -fsSL "https://github.com/adoptium/temurin21-binaries/releases/download/jdk-${JAVA_VERSION}/OpenJDK21U-jdk_x64_linux_hotspot_${JV}.tar.gz" \
       | tar -C /opt -xz && mv /opt/jdk-* /opt/java
 ENV JAVA_HOME=/opt/java
