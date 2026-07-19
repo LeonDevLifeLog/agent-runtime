@@ -5,6 +5,7 @@
 FROM ubuntu:24.04 AS base
 
 # ---- 版本锚定（改这里即可升级） ----
+ARG GH_VERSION=2.96.0
 ARG YQ_VERSION=4.45.1
 ARG GLAB_VERSION=1.108.0
 ARG MULTICA_VERSION=0.4.4
@@ -46,16 +47,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ---- uv (Python 包管理) ----
 RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 
-# ---- GitHub CLI (gh) ----
+# ---- GitHub CLI (gh，二进制安装) ----
+# 不用官方 apt 源：否则镜像内会残留指向 cli.github.com 的 apt 源，
+# 容器在境内运行时 `apt update` 会因该源不可达而整体卡死/报错。
 RUN set -eux; \
-    mkdir -p -m 755 /etc/apt/keyrings; \
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-      -o /etc/apt/keyrings/githubcli-archive-keyring.gpg; \
-    chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg; \
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-      > /etc/apt/sources.list.d/github-cli.list; \
-    apt-get update && apt-get install -y --no-install-recommends gh; \
-    rm -rf /var/lib/apt/lists/*
+    curl -fsSL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${TARGETARCH}.tar.gz" \
+      | tar -C /tmp -xz; \
+    install -m 755 "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH}/bin/gh" /usr/local/bin/gh; \
+    rm -rf "/tmp/gh_${GH_VERSION}_linux_${TARGETARCH}"
 
 # ---- yq (YAML 处理) ----
 RUN set -eux; \
