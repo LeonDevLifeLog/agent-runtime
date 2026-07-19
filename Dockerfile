@@ -108,7 +108,10 @@ WORKDIR /home/agent
 
 # ---- x-cmd (POSIX shell 工具集，per-user 安装到 $HOME/.x-cmd.root) ----
 # 必须在 USER agent + COPY dotfiles 之后：它写 $HOME 并向 .bashrc 追加激活行
+# 安装器收尾时会尝试写 /setup.log（无权限）导致非 0 退出，属 cosmetic；
+# 以入口文件 $HOME/.x-cmd.root/X 是否生成作为真正的成功判据。
 RUN ___X_CMD_TOINSTALL_VERSION="${XCMD_VERSION}" ___X_CMD_XBINEXP_EXIT=1 \
-      sh -c "$(curl -fsSL https://get.x-cmd.com)"
+      sh -c "$(curl -fsSL https://get.x-cmd.com)" || true; \
+    test -e "$HOME/.x-cmd.root/X"
 
 CMD ["/bin/bash"]
