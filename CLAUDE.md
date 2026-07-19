@@ -53,9 +53,10 @@ git tag 驱动，**版本号 `v<x.y.z>`，`v` 不可省略**，镜像 tag 与 gi
 - **Go 经 x-cmd 装**（`x env use go`）再 symlink 到 `/usr/local/bin`，保证非交互（`docker run img go build`）也能用。source x-cmd 的 `X` 前必须 `export ___X_CMD_ROOT` 且**不能开 `set -u`**（nounset 会撞未设变量报错）。
 - **VERSION 的 ARG/ENV/LABEL 放在 base 末尾**（brew 之后），避免版本变动破坏前面 apt/brew/x-cmd 重层缓存。
 - 镜像以非 root `agent` 用户运行，带免密 sudo；脚本里 apt/写 `/usr/local` 用 `sudo`。
+- **entrypoint** (`scripts/entrypoint.sh`, base 里设 `ENTRYPOINT`)：`CN_MIRROR=1` 时用 chsrc 自动换国内源（ubuntu/python/node/go/maven/brew），否则零行为直接 `exec "$@"`；换源失败只告警不阻断。镜像保持境内外中立。
 - 纯 Docker 方案，**没有 cloud-init**（仓库曾叫 cloud-init-agent，勿被历史命名误导）。
 
 ## 尚未落地（改动前先看是否已存在）
 
-- 凭据注入 entrypoint（gh/glab/multica 的 token 目前靠运行时手动注入，README「认证」节有说明）。
-- apt/Homebrew 的境内镜像源（当前只有 gh 做了境内适配）。
+- 凭据注入（gh/glab/multica 的 token 目前靠运行时手动注入，README「认证」节有说明；entrypoint 已存在，未来可在其中加 token 注入）。
+- brew 瘦身（base ~496MB 含 Homebrew ~157MB，可考虑移出 base 成独立层）。

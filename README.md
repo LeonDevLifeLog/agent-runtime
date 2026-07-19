@@ -100,6 +100,22 @@ docker run -it --rm \
   ghcr.io/leondevlifelog/agent-runtime:latest
 ```
 
+## 境内运行（换源）
+
+镜像本身不预置任何镜像源，保持境内外通用。容器启动时若设 `CN_MIRROR=1`，
+entrypoint 会用 [chsrc](https://github.com/RubyMetric/chsrc) 自动测速换到最快的国内镜像源
+（`ubuntu` apt、`python` pip+uv、`node` npm+pnpm、`go`、`maven`、`brew`）；不设则零行为。
+
+```bash
+# 境内运行，自动换源
+docker run -it --rm -e CN_MIRROR=1 ghcr.io/leondevlifelog/agent-runtime:latest
+
+# 境外运行，什么都不加即可
+docker run -it --rm ghcr.io/leondevlifelog/agent-runtime:latest
+```
+
+> 换源失败只告警、不阻断启动；需要容器启动时可联网测速。手动换源也可随时 `chsrc set <目标>`。
+
 ## 本地构建
 
 ```bash

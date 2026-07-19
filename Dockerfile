@@ -123,6 +123,8 @@ ENV AGENT_RUNTIME_VERSION=${VERSION}
 LABEL org.opencontainers.image.version=${VERSION} \
       org.opencontainers.image.source="https://github.com/LeonDevLifeLog/agent-runtime"
 
+# ---- entrypoint：运行时按需换国内镜像源（CN_MIRROR=1 启用），随后透传 CMD ----
+ENTRYPOINT ["/opt/scripts/entrypoint.sh"]
 CMD ["/bin/bash"]
 
 # =====================================================================
