@@ -10,6 +10,7 @@ ARG YQ_VERSION=4.45.1
 ARG GLAB_VERSION=1.108.0
 ARG MULTICA_VERSION=0.4.4
 ARG XCMD_VERSION=v0.9.13
+ARG CHSRC_VERSION=0.2.5
 ARG TARGETARCH=amd64
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -74,6 +75,13 @@ RUN set -eux; \
     curl -fsSL "https://github.com/multica-ai/multica/releases/download/v${MULTICA_VERSION}/multica-cli-${MULTICA_VERSION}-linux-${TARGETARCH}.tar.gz" \
       | tar -C /usr/local/bin -xz multica; \
     chmod +x /usr/local/bin/multica
+
+# ---- chsrc (全平台换源工具，二进制安装) ----
+RUN set -eux; \
+    ARCH_CHSRC=$([ "$TARGETARCH" = "amd64" ] && echo x64 || echo aarch64); \
+    curl -fsSL "https://github.com/RubyMetric/chsrc/releases/download/v${CHSRC_VERSION}/chsrc-${ARCH_CHSRC}-linux" \
+      -o /usr/local/bin/chsrc; \
+    chmod +x /usr/local/bin/chsrc
 
 # ---- 非 root 用户 ----
 RUN useradd -ms /bin/bash agent \

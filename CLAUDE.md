@@ -29,7 +29,7 @@ gh run view <run-id> --log-failed > /tmp/f.log   # 失败时导出日志用 Read
 
 多 stage 分层，`scripts/install-*.sh` 把语言安装逻辑抽出、被单语言 stage 与 `full` 共用：
 
-- **`base`** = 系统 CLI + Python(3 + uv) + **三个包管理器入口 apt / x-cmd / brew** + gh/glab/yq/multica + `agent` 用户。**不含** Node/Go/Java SDK。
+- **`base`** = 系统 CLI + Python(3 + uv) + **三个包管理器入口 apt / x-cmd / brew** + gh/glab/yq/multica/chsrc + `agent` 用户。**不含** Node/Go/Java SDK。
 - **`node` / `go` / `java`** = `FROM base` 各叠一种语言。
 - **`full`**（→ `latest`）= base + Node + Go + Java。
 
