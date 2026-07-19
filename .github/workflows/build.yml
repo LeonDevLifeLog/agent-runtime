@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
@@ -19,6 +19,15 @@ jobs:
         target: [base, node, go, java, full]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Compute version
+        id: ver
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=0.0.0-edge.${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: docker/setup-buildx-action@v3
 
@@ -33,16 +42,51 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            type=raw,value=${{ matrix.target }}
+            type=semver,pattern={{version}},prefix=${{ matrix.target }}-
+            type=raw,value=${{ matrix.target }},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=semver,pattern={{version}},enable=${{ matrix.target == 'full' }}
+            type=raw,value=latest,enable=${{ matrix.target == 'full' && startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=${{ matrix.target }}-edge,enable=${{ github.ref == 'refs/heads/main' }}
             type=sha,prefix=${{ matrix.target }}-
-            type=raw,value=latest,enable=${{ matrix.target == 'full' }}
 
       - uses: docker/build-push-action@v6
         with:
           context: .
           target: ${{ matrix.target }}
           push: true
+          build-args: |
+            VERSION=${{ steps.ver.outputs.version }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.target }}
           cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE: ghcr.io/${{ github.repository }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          {
+            echo '## 镜像'
+            echo
+            echo '```bash'
+            echo "docker pull ${IMAGE}:${VERSION}          # full（全能）"
+            echo "docker pull ${IMAGE}:latest              # = 最新 release"
+            echo "docker pull ${IMAGE}:node-${VERSION}     # 仅 Node"
+            echo "docker pull ${IMAGE}:go-${VERSION}       # 仅 Go"
+            echo "docker pull ${IMAGE}:java-${VERSION}     # 仅 Java"
+            echo "docker pull ${IMAGE}:base-${VERSION}     # 基础层"
+            echo '```'
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md \
+            || gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md

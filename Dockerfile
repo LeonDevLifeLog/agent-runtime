@@ -109,6 +109,13 @@ ENV HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew \
 ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
 RUN brew --version
 
+# ---- 版本信息内嵌（靠后放，避免变动破坏前面重层的缓存）----
+# VERSION 由 CI 依据 git tag 传入；ENV 被各子 stage 继承，label 亦然。
+ARG VERSION=dev
+ENV AGENT_RUNTIME_VERSION=${VERSION}
+LABEL org.opencontainers.image.version=${VERSION} \
+      org.opencontainers.image.source="https://github.com/LeonDevLifeLog/agent-runtime"
+
 CMD ["/bin/bash"]
 
 # =====================================================================
