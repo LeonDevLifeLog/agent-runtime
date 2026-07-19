@@ -114,4 +114,16 @@ RUN set -ex; \
     sudo ln -sf "$gobin/gofmt" /usr/local/bin/gofmt; \
     go version
 
+# ---- Homebrew (Linuxbrew，以 agent 用户安装到 /home/linuxbrew/.linuxbrew) ----
+# 需非 root + 免密 sudo（agent 已满足）；NONINTERACTIVE=1 走非交互安装。
+RUN NONINTERACTIVE=1 /bin/bash -c \
+      "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+# 把 brew 放进全局环境，保证非交互调用（docker run img brew ...）也能用
+ENV HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew \
+    HOMEBREW_CELLAR=/home/linuxbrew/.linuxbrew/Cellar \
+    HOMEBREW_REPOSITORY=/home/linuxbrew/.linuxbrew/Homebrew \
+    HOMEBREW_NO_ANALYTICS=1
+ENV PATH="/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:${PATH}"
+RUN brew --version
+
 CMD ["/bin/bash"]

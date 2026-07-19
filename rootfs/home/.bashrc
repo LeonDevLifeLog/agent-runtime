@@ -28,6 +28,11 @@ export PATH="$HOME/.local/bin:$PATH"
 export GOPATH="$HOME/go"
 export PATH="$GOPATH/bin:$PATH"
 
+# Homebrew (Linuxbrew) 环境（交互式 shell 补全 MANPATH/INFOPATH 等）
+if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
+    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+
 # Ubuntu 下 bat/fd 的可执行名是 batcat/fdfind，补回常用名
 alias bat='batcat'
 alias fd='fdfind'
